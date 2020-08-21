@@ -1,0 +1,13 @@
+[package]
+name = "binartree"
+version = "1.0.0"
+authors = ["Paranid5 <dinaraparanid@gmail.com>"]
+edition = "2018"
+description = "Binary Tree realisation"
+license = "MIT/Apache-2.0"
+documentation = "https://docs.rs/binartree/0.1.0/binartree/index.html"
+homepage = "https://github.com/dinaraparanid/Binary-Tree"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
