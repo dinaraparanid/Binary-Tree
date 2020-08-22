@@ -764,9 +764,9 @@ impl<T> BinaryTree<T>
 		let source = self.to_vec();
 		
 		for i in 0..source.len() {
-			if let Ok(ind) = src.binary_search(&source[i]) {
-				src.remove(ind);
-			}else {
+			if let Some(ind) = find_vec(&src, &source[i]) {
+				src.swap_remove(ind);
+			} else {
 				new_tree.push(source[i].clone());
 			}
 		}
@@ -774,6 +774,21 @@ impl<T> BinaryTree<T>
 		self.clear();
 		self.extend(new_tree);
 	}
+}
+
+/// *English*: Search function in vector.
+///
+/// *Russian*: Функция поиска в векторе.
+
+fn find_vec<T>(src: &Vec<T>, val: &T) -> Option<usize>
+	where T: Copy + Clone + Ord + Eq
+{
+	for i  in 0..src.len() {
+		if src[i] == *val {
+			return Some(i)
+		}
+	}
+	None
 }
 
 /// *English*: Trait **Iterator** for tree. Now we can iterate in our tree.
