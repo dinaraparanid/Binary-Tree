@@ -30,7 +30,7 @@ impl<T> Default for TreeIter<T>
 	
 	/// *Russian*: Создаём пустой итератор
 	///
-	/// *English*: Creates empty iterator.
+	/// *English*: Creates an empty iterator.
 	///
 	/// # Example
 	///
@@ -59,6 +59,7 @@ impl<T> TreeIter<T>
 	///
 	/// *Russian*: Добавляем метод **new()** для нашего итератора.
 	/// ~~Иногда полезен~~
+	///
 	/// # Example
 	///
 	/// ```
@@ -127,9 +128,10 @@ impl<T> Iterator for TreeIter<T>
 	
 	type Item = T;
 	
-	/// *English*: Method **next()** allows to move in iterator
-	/// *elem-by-elem*. If we reaches the end, method will return *None*,
+	/// *English*: Method **next()** allows to walk in iterator
+	/// *elem-by-elem*. If we reached the end, method will return *None*,
 	/// else *Some(T)*.
+	///
 	/// When we work with iterator, we are *clearing* it.
 	/// That means that **IT'S IS NOT ALLOWED TO USE IT MORE THEN ONE TIME**
 	///
@@ -137,6 +139,7 @@ impl<T> Iterator for TreeIter<T>
 	/// нашему итератору *поэлементно*.
 	/// Если мы дошли до конца, то вернётяс *None*,
 	/// иначе *Some(T)*.
+	///
 	/// Здесь мы *опустошаем* наш итератор, так что
 	/// **ПОВТОРНОЕ ИСПОЛЬЗОВАНИЕ ОДНОГО И ТОГО ЖЕ
 	/// ИТЕРАТОРА ЗАПРЕЩЕНО**.

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["TreeIter","Realisation of Iterator for Tree --------------------------------------- English: Our Iterator contains elements in std::collections::VecDeque. It's faster than std::collections::LinkedList, and it can push and delete elements from begin and end."]]});

@@ -27,8 +27,8 @@ use std::collections::VecDeque;
 ///``` 
 /// from C++: you can collect
 /// equal and not equal values in a sorted order, make some manipulations with tree
-/// like insertion, clearing, removing values, change equal values to other values ans so on.
-/// Check **method list** and examples to bi familiar with my crate.
+/// like insertion, clearing, removing values, change equal values to other values and so on.
+/// Check **method list** and examples to be familiar with my crate.
 /// Also you can visit the project's repository https://github.com/dinaraparanid/Binary-Tree
 /// And check the full code. I highly recommend to see **tests.rs** file.
 /// There are a lot of examples of code. so you'll easily figure out how to use it
@@ -131,7 +131,7 @@ impl<T> BinaryTree<T>
 		}
 	}
 	
-	/// *English*: Method **len()** return *tree's length*.
+	/// *English*: Method **len()** returns *tree's length*.
 	///
 	/// *Russian*: Метод **len()** возвращает *длину дерева*.
 	///
@@ -155,7 +155,7 @@ impl<T> BinaryTree<T>
 		self.size
 	}
 	
-	/// *English*: Method **is_empty()** answer the question: "is out tree empty?"
+	/// *English*: Method **is_empty()** answers the question: "is out tree empty?"
 	/// If it's true, returns *true*, else *false*.
 	///
 	/// *Rusiian*: Метод **is_empty()** отвечает на вопрос: "пусто ли наше дерево?"
@@ -290,7 +290,7 @@ impl<T> BinaryTree<T>
 	}
 	
 	/// *English*: Method **first()** returns *minimum value in the tree*.
-	/// if tree is empty, than it'll panic.
+	/// if tree is empty, it'll panic.
 	///
 	/// *Russian*: Метод **first()** возвращает *минимальное значение
 	/// в дереве*. Если дерево пустое, то будет вызвана *паника*.
@@ -375,7 +375,7 @@ impl<T> BinaryTree<T>
 		}
 	}
 	
-	/// *English*: Method **apend()** translate all elements
+	/// *English*: Method **apend()** translates all elements
 	/// *from 2-nd tree to 1-st*. All trees are taking by *immutable reference*,
 	/// no ownership.
 	///
@@ -498,8 +498,8 @@ impl<T> BinaryTree<T>
 		it
 	}
 	
-	/// *English*: Method **drain_filter()** *stoles all values* in tree,
-	/// which are *matches the simple or lambda function*.
+	/// *English*: Method **drain_filter()** *stoles all values* from tree,
+	/// which are *match the simple or lambda function*.
 	/// Returns *iterator with all removed values*.
 	///
 	/// *Russian*: Метод **drain_filter()** *крадёт все элементы* из дерева,
@@ -605,7 +605,7 @@ impl<T> BinaryTree<T>
 	}
 	
 	/// *English*: Method **pop_frist** *removes min value from tree*.
-	/// If tree is empty, than it'll *panic*
+	/// If tree is empty, it'll *panic*
 	///
 	/// *Russian*: Метод **pop_first()** *удаляет наименьший элемент дерева*.
 	/// Т.к. дерево может быть пустым, то будет вызвана *паника*
@@ -739,7 +739,7 @@ impl<T> BinaryTree<T>
 	/// *English*: You should use method **multi_remove()**
 	/// when you want to *remove more than one value from tree*.
 	/// It's **a lot more faster** then removing elem-by-elem.
-	/// It takes ownership, so you need to clonew it, if you want to use src twice.
+	/// It takes ownership, so you need to clone it, if you want to use src twice.
 	///
 	/// *Russian*: Метод **multi_remove()** нужен для *быстрого удаления сразу нескольких элементов*.
 	/// Работает **ГОРАЗДО быстрее**, чем поэлементное удаление.
@@ -759,7 +759,6 @@ impl<T> BinaryTree<T>
 	/// assert_eq!(tree.to_vec(), vec![6, 7, 8, 9]);
 	/// ```
 	
-	#[allow(unused_assignments)]
 	pub fn multi_remove(&mut self, mut src: Vec<T>) {
 		let mut new_tree = vec![];
 		let source = self.to_vec();
@@ -862,13 +861,13 @@ impl<T> IntoIterator for BinaryTree<T>
 impl<T> Extend<T> for BinaryTree<T>
 	where T: Copy + Clone + Ord + Eq
 {
-	/// *Russian*: Метод **extend()** *крадёт ключи из итерируемого значения*.
-	/// Метод *принимает владение* ресурсами, так что копируёте,
-	/// если хотите повторно использовать значение.
-	///
 	/// *English*: Method **extend()** *stoles keys from value*.
 	/// It *takes ownership* of src, so if you want to continue
 	/// using it, copy.
+	///
+	/// *Russian*: Метод **extend()** *крадёт ключи из итерируемого значения*.
+	/// Метод *принимает владение* ресурсами, так что копируёте,
+	/// если хотите повторно использовать значение.
 	
 	fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
 		for it in iter {
@@ -878,7 +877,7 @@ impl<T> Extend<T> for BinaryTree<T>
 }
 
 /// *English*: **FromIterator<T>** trait for tree.
-/// Now we acn build tree from iterators
+/// Now we can build tree from iterators
 ///
 /// *Russian*: Добавление трейта **FromIterator<T>** для дерева.
 /// Теперь мы можем построить дерево из итераторов
