@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["BinaryTree","Realisation of Binary Search Tree in Rust lang  ---------------------------------------------------------  English: ABOUT STRUCTURE"]]});
