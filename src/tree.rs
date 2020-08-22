@@ -3,6 +3,7 @@ use crate::iter::TreeIter;
 use crate::branch::Branch;
 use std::iter::FromIterator;
 use std::collections::VecDeque;
+use std::ops::{BitAnd, BitOr, BitXor};
 
 /// **Realisation of Binary Search Tree in Rust lang**
 /// ---------------------------------------------------------
@@ -916,5 +917,112 @@ impl<T> FromIterator<T> for BinaryTree<T>
 		let mut tree = BinaryTree::new();
 		tree.extend(iter);
 		return tree;
+	}
+}
+
+/// *English*: **BitAnd** trait implementation.
+/// Creates *new Tree from 1-st and 2-nd trees*.
+///
+/// *Russian*: Трейт **BitAnd** позволяет создать
+/// *дерево из 2-х других*.
+
+impl<T> BitAnd for &BinaryTree<T>
+	where T: Copy + Clone + Ord + Eq
+{
+	/// *English*: Return BinaryTree<T>
+	///
+	/// *Russian*: Возвращает BinaryTree<T>
+	
+	type Output = BinaryTree<T>;
+	
+	/// *English*: Creates new binary tree from 2 trees
+	///
+	/// *Russian*: Создаёт дерево из 2-х других
+	///
+	/// # Example
+	///
+	/// ```
+	///  use binartree::tree::BinaryTree;
+	/// use std::iter::FromIterator;
+	///
+	/// let tree1 = BinaryTree::from_iter(1..20);
+	/// let tree2 = BinaryTree::from_iter(10..20);
+	///
+	/// assert_eq!((&tree1 & &tree2).to_vec(), (10..20).collect::<Vec<i32>>());
+	/// ```
+	
+	fn bitand(self, rhs: &BinaryTree<T>) -> BinaryTree<T> {
+		BinaryTree::from_iter(self.intersection(rhs))
+	}
+}
+
+/// *English*: **BitOr** trait for tree. Creates tree,
+/// which contains *elements from 1-st and 2-nd trees*.
+/// Return BinaryTree<T>
+///
+/// *Russian*: **BitOr** Трейт для дерева. Создаёт
+/// дерево *из элементов 1 и 2 дерева (пересечение)*.
+/// Возвращает BinaryTree<T>
+
+impl<T> BitOr for &BinaryTree<T>
+	where T: Copy + Clone + Ord + Eq
+{
+	
+	/// *English*: Return BinaryTree<T>
+	///
+	/// *Russian*: Возвращает BinaryTree<T>
+	
+	type Output = BinaryTree<T>;
+	
+	/// *English*: Creates new binary tree from 2 trees
+	///
+	/// *Russian*: Создаёт дерево из 2-х других
+	///
+	/// # Example
+	///
+	/// ```
+	///  use binartree::tree::BinaryTree;
+	/// use std::iter::FromIterator;
+	///
+	/// let tree1 = BinaryTree::from_iter(1..10);
+	/// let tree2 = BinaryTree::from_iter(10..20);
+	///
+	/// assert_eq!((&tree1 | &tree2).to_vec(), (1..20).collect::<Vec<i32>>());
+	/// ```
+	
+	fn bitor(self, rhs: &BinaryTree<T>) -> BinaryTree<T> {
+		let mut output = self.symmetric_difference(&rhs).collect::<BinaryTree<T>>();
+		output.extend(self.intersection(&rhs));
+		output
+	}
+}
+
+impl<T> BitXor for &BinaryTree<T>
+	where T: Copy + Clone + Ord + Eq
+{
+	/// *English*: Return BinaryTree<T>
+	///
+	/// *Russian*: Возвращает BinaryTree<T>
+	
+	type Output = BinaryTree<T>;
+	
+	/// *English*: Creates new binary tree from 2 trees
+	///
+	/// *Russian*: Создаёт дерево из 2-х других
+	///
+	/// # Example
+	///
+	/// ```
+	///  use binartree::tree::BinaryTree;
+	/// use std::iter::FromIterator;
+	///
+	/// let tree1 = BinaryTree::from_iter(1..15);
+	/// let tree2 = BinaryTree::from_iter(10..20);
+	///
+	/// assert_eq!((&tree1 ^ &tree2).to_vec(), vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 15, 16, 17, 18, 19]);
+	/// ```
+	
+	fn bitxor(self, rhs: &BinaryTree<T>) -> BinaryTree<T> {
+		BinaryTree::from_iter(self.symmetric_difference(&rhs))
 	}
 }
