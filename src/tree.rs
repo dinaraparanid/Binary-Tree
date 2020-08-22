@@ -1,8 +1,8 @@
 use crate::node::Node;
 use crate::iter::TreeIter;
+use crate::branch::Branch;
 use std::iter::FromIterator;
 use std::collections::VecDeque;
-use crate::branch::Branch;
 
 /// **Realisation of Binary Search Tree in Rust lang**
 /// ---------------------------------------------------------
@@ -125,7 +125,10 @@ impl<T> BinaryTree<T>
 	
 	#[inline]
 	pub fn new() -> Self {
-		BinaryTree::default()
+		BinaryTree {
+			top: Node::Empty,
+			size: 0,
+		}
 	}
 	
 	/// *English*: Method **len()** return *tree's length*.
@@ -428,10 +431,16 @@ impl<T> BinaryTree<T>
 	
 	/// *English*: *Removing element from tree*.
 	/// Keys, that are in subnodes are *still in tree*.
+	/// **USE THIS METHOD ONLY IF YOU WANT TO REMOVE
+	/// ONE ELEMENT FROM TREE. USE *MULTI_REMOVE()* IF
+	/// YOU WISH TO REMOVE MORE THAN 1 ELEM. IT'S A LOT MORE FASTER**
 	///
 	/// *Russian*: *Удаление элемента из дерева*.
 	/// Ключи, которые есть в подузлах искомого узла
 	/// *остаются в нашем дереве*.
+	/// **ИСПОЛЬЗУЙТЕ ЭТОД МЕТОД ТОЛЬК ЕСЛИ ХОТИТЕ
+	/// УДАЛИТЬ 1 ЭЛЕМЕНТ ИЗ ДЕРЕВА. ЛУЧШЕ ИСПОЛЬЗОВАТЬ
+	/// *MULTI_ERMOVE()*, КОТОРЫЙ РАБОТАЕТ В РАЗЫ БЫСТРЕЕ**
 	///
 	/// # Example
 	///
@@ -726,6 +735,46 @@ impl<T> BinaryTree<T>
 		it.extend(iter);
 		it
 	}
+	
+	/// *English*: You should use method **multi_remove()**
+	/// when you want to *remove more than one value from tree*.
+	/// It's **a lot more faster** then removing elem-by-elem.
+	/// It takes ownership, so you need to clonew it, if you want to use src twice.
+	///
+	/// *Russian*: Метод **multi_remove()** нужен для *быстрого удаления сразу нескольких элементов*.
+	/// Работает **ГОРАЗДО быстрее**, чем поэлементное удаление.
+	/// Метод принимает владение значениями, так что нужно копировать вектор с ресурсами,
+	/// если хотите использовать его дважды.
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::tree::BinaryTree;
+	/// use std::iter::FromIterator;
+	///
+	/// let mut tree = BinaryTree::from_iter(1..10);
+	/// assert_eq!(tree.to_vec(), vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);
+	///
+	/// tree.multi_remove(vec![1, 2, 3, 4, 5]);
+	/// assert_eq!(tree.to_vec(), vec![6, 7, 8, 9]);
+	/// ```
+	
+	#[allow(unused_assignments)]
+	pub fn multi_remove(&mut self, mut src: Vec<T>) {
+		let mut new_tree = vec![];
+		let source = self.to_vec();
+		
+		for i in 0..source.len() {
+			if let Ok(ind) = src.binary_search(&source[i]) {
+				src.remove(ind);
+			}else {
+				new_tree.push(source[i].clone());
+			}
+		}
+		
+		self.clear();
+		self.extend(new_tree);
+	}
 }
 
 /// *English*: Trait **Iterator** for tree. Now we can iterate in our tree.
@@ -855,5 +904,3 @@ impl<T> FromIterator<T> for BinaryTree<T>
 		return tree;
 	}
 }
-
-

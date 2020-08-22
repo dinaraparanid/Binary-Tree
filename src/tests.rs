@@ -780,4 +780,28 @@ mod tree_test {
 		
 		assert_eq!(tree1.symmetric_difference(&tree2).collect::<Vec<i32>>(), check);
 	}
+	
+	#[test]
+	fn tree_multi_remove_test() {
+		let mut tree = BinaryTree::new();
+		
+		tree.extend(vec![25; 50]);
+		assert_eq!(tree.to_vec(), vec![25; 50]);
+		
+		tree.multi_remove(vec![25; 25]);
+		assert_eq!(tree.to_vec(), vec![25; 25]);
+		
+		let mut tree2 = BinaryTree::new();
+		
+		tree2.extend(vec![75; 100]);
+		tree2.extend(vec![100; 100]);
+		
+		tree2.multi_remove(vec![75; 25]);
+		tree2.multi_remove(vec![100; 75]);
+		
+		let mut check = vec![75; 75];
+		check.extend(vec![100; 25]);
+		
+		assert_eq!(tree2.to_vec(), check);
+	}
 }
