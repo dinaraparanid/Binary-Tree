@@ -1,5 +1,7 @@
 use std::collections::VecDeque;
 use std::iter::FromIterator;
+use std::ops::{RangeBounds, Deref};
+use std::collections::vec_deque::Drain;
 
 /// **Realisation of Iterator for Tree**
 /// ---------------------------------------
@@ -41,8 +43,9 @@ impl<T> Default for TreeIter<T>
 	/// assert_eq!(def_iter.into_iter(), TreeIter::new());
 	/// ```
 	
+	#[inline]
 	fn default() -> Self {
-		return TreeIter { iter: VecDeque::new() };
+		TreeIter { iter: VecDeque::new() }
 	}
 }
 
@@ -50,15 +53,13 @@ impl<T> Default for TreeIter<T>
 /// Realisation of methods for Iterator
 /// ---------------------------------------
 
-#[allow(dead_code)]
 impl<T> TreeIter<T>
 	where T: Copy + Clone + Ord + Eq
 {
 	
-	/// *English*: Method **new()** creates *empty iterator*. ~~Sometimes useful~~.
+	/// *English*: Method **new()** creates *empty iterator*
 	///
-	/// *Russian*: Добавляем метод **new()** для нашего итератора.
-	/// ~~Иногда полезен~~
+	/// *Russian*: Метод **new()** создаёт пустой итератор
 	///
 	/// # Example
 	///
@@ -70,8 +71,43 @@ impl<T> TreeIter<T>
 	/// assert_eq!(new_iter.collect::<VecDeque<i32>>(), VecDeque::<i32>::new());
 	/// ```
 	
+	#[inline]
 	pub fn new() -> Self {
-		TreeIter::default()
+		TreeIter { iter: VecDeque::new() }
+	}
+	
+	/// *English*: Method **with_capacity()** returns iterator with some capacity
+	///
+	/// *Russian*: Метод **with_capacity()** возвращает итератор с определённой ёмкостью
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;                // can contain 3 elements
+	/// let iter = TreeIter::<i32>::with_capacity(3); // without reallocation
+	/// assert_eq!(iter.capacity(), 3);
+	/// ```
+	
+	#[inline]
+	pub fn with_capacity(capacity: usize) -> Self {
+		TreeIter { iter: VecDeque::with_capacity(capacity) }
+	}
+	
+	/// *English*: returns iterator's capacity
+	///
+	/// *Russian*: возвращает ёмкость итератора
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;                // can contain 3 elements
+	/// let iter = TreeIter::<i32>::with_capacity(3); // without reallocation
+	/// assert_eq!(iter.capacity(), 3);
+	/// ```
+	
+	#[inline]
+	pub fn capacity(&self) -> usize {
+		self.iter.capacity()
 	}
 	
 	/// *English*: Method **len()** returns *iterator's len*
@@ -88,8 +124,507 @@ impl<T> TreeIter<T>
 	/// assert_eq!(iter.len(), 10);
 	/// ```
 	
+	#[inline]
 	pub fn len(&self) -> usize {
 		self.iter.len()
+	}
+	
+	/// *English*: Method **is_empty()** answers the question: "is out iterator empty?"
+	/// If it's true, returns *true*, else *false*.
+	///
+	/// *Rusiian*: Метод **is_empty()** отвечает на вопрос: "пуст ли итератор?"
+	/// Если пусто, то возвращает *true*, иначе *false*.
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let not_empty_iter = TreeIter::from_iter(1..10);
+	/// assert_eq!(not_empty_iter.is_empty(), false);
+	///
+	/// let empty_iter = TreeIter::<i32>::new();
+	/// assert_eq!(empty_iter.is_empty(), true);
+	/// ```
+	
+	#[inline]
+	pub fn is_empty(&self) -> bool {
+		self.iter.is_empty()
+	}
+	
+	/// *English*: Method **append()** adds another iterator
+	/// to our iterator. *Takes ownership*
+	///
+	/// *Russian*: Метод **append()** добавляет итератор
+	/// в наш итератор. *Принимает владение*
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let mut iter1 = TreeIter::from_iter(1..15);
+	/// let iter2 = TreeIter::from_iter(5..20);
+	/// iter1.append(iter2);
+	///
+	/// let mut check = (1..15).collect::<Vec<i32>>();
+	/// check.extend(5..20);
+	///
+	/// assert_eq!(iter1.collect::<Vec<i32>>(), check);
+	/// ```
+	
+	#[inline]
+	pub fn append(&mut self, src: Self) {
+		self.iter.extend(src)
+	}
+	
+	/// *English*: Method **clear()** cleans all iterator
+	///
+	/// *Russian* Метод **clear()** очищает всесь итератор
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let mut iter = TreeIter::from_iter(1..10);
+	/// iter.clear();
+	/// assert_eq!(iter.collect::<Vec<i32>>(), vec![]);
+	/// ```
+	
+	#[inline]
+	pub fn clear(&mut self) {
+		self.iter.clear()
+	}
+	
+	/// *English*: full clear of repeated elements.
+	/// Makes Iterator sorted.
+	///
+	/// *Russian*: полностью очищает итератор от повторов.
+	/// Возвращает отсортированный итератор.
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	///
+	/// let mut iter = TreeIter::new();
+	/// iter.extend(vec![1, 2, 3, 1, 2, 3]);
+	/// iter.full_dedup();
+	/// assert_eq!(iter.collect::<Vec<i32>>(), vec![1, 2, 3]);
+	/// ```
+	
+	pub fn full_dedup(&mut self) {
+		let mut vec = Vec::from(self.iter.clone());
+		vec.sort(); vec.dedup();
+		self.clear(); self.extend(vec);
+	}
+	
+	/// *English*: Creates a draining iterator with removed
+	/// elements from iterator. Takes elements from start's
+	/// index to end's index.
+	/// Panics if the starting point is greater than the end point 
+	/// or if the end point is greater than the length of the iterator.
+	///
+	/// *Russian*: Удаляет с start-ого по finish-ный элементы.
+	/// Паникует, если начало больше конца или конец больше длины.
+	/// Возвращает итератор с удалёнными элементами.
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let mut iter = TreeIter::with_capacity(6);
+	/// iter.extend((0..11).step_by(2));
+	/// let remove = iter.drain(1..5);
+	///
+	/// assert_eq!(remove.collect::<Vec<i32>>(), (2..=8).step_by(2).collect::<Vec<i32>>());
+	/// ```
+	
+	#[inline]
+	pub fn drain<R> (&mut self, range: R) -> Drain<T>
+		where R: RangeBounds<usize>
+	{
+		self.iter.drain(range)
+	}
+	
+	/// *English*: Method **drain_filter()** removes all elements that returns *true* with some function
+	///
+	/// *Russian*: Метод **drain_filter()** крадёт все элементы, удоволетворяющие функции
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let mut iter = TreeIter ::from_iter(0..10);
+	/// let iter2 = iter.drain_filter(|x| *x % 2 == 0);
+	///
+	/// assert_eq!(iter.collect::<Vec<i32>>(), vec![1, 3, 5, 7, 9]);
+	/// assert_eq!(iter2.collect::<Vec<i32>>(), vec![0, 2, 4, 6, 8]);
+	/// ```
+	
+	pub fn drain_filter<F: FnMut(&T) -> bool>(&mut self, mut filter: F) -> Self {
+		let mut remove_it = Vec::with_capacity(self.len());
+		let iter = self.iter.clone();
+		
+		for elem in iter {
+			if filter(&elem) {
+				remove_it.push(elem.clone());
+			}
+		}
+		
+		let mut old_vec = Vec::with_capacity(self.len());
+		
+		for elem in &self.iter {
+			if let Err(_) = remove_it.binary_search(elem) {
+				old_vec.push(elem.clone());
+			}
+		}
+		
+		self.clear();
+		self.extend(old_vec);
+		
+		remove_it.shrink_to_fit();
+		let mut rem = TreeIter::with_capacity(remove_it.len());
+		rem.extend(remove_it);
+		rem
+	}
+	
+	/// *English*: Extends all elements from slice to the end of iterator
+	///
+	/// *Russian*: Добавляет все элементы в конец итератора из среза
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	///
+	/// let mut iter = TreeIter::with_capacity(3);
+	/// iter.extend_from_slice(&[2, 3, 4]);
+	/// assert_eq!(iter.collect::<Vec<i32>>(), vec![2, 3, 4]);
+	/// ```
+	
+	#[inline]
+	pub fn extend_from_slice(&mut self, slice: &[T]) {
+		let mut vec = Vec::with_capacity(slice.len());
+		vec.extend_from_slice(slice);
+		self.extend(vec);
+	}
+	
+	/// *English*: *Inserts an element at position index* within the iterator,
+	/// shifting all elements after it to the right.
+	/// Panics if index > len
+	///
+	/// *Russian*: *Добавляет значение по-индексу*,
+	/// передвигая все элементы после правее.
+	/// Паникует если index > len
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	///
+	/// let mut iter = TreeIter::new();
+	/// iter.insert(0, &1);
+	/// iter.insert(0, &2);
+	/// iter.insert(0, &3);
+	/// assert_eq!(iter.collect::<Vec<i32>>(), vec![3, 2, 1]);
+	/// ```
+	
+	#[inline]
+	pub fn insert(&mut self, index: usize, val: &T) {
+		self.iter.insert(index, val.clone());
+	}
+	
+	/// *English*: place value to the start
+	///
+	/// *Russian*: добавляет значение в начало
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let mut iter = TreeIter::from_iter(1..5);
+	/// iter.push_front(&0);
+	///
+	/// assert_eq!(iter.collect::<Vec<i32>>(), vec![0, 1, 2, 3, 4]);
+	/// ```
+	
+	#[inline]
+	pub fn push_front(&mut self, val: &T) {
+		self.iter.push_front(val.clone());
+	}
+	
+	/// *English*: removes value from the start
+	///
+	/// *Russian*: удаляет значение из начала
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let mut iter = TreeIter::from_iter(1..5);
+	/// iter.pop_front();
+	///
+	/// assert_eq!(iter.collect::<Vec<i32>>(), vec![2, 3, 4]);
+	/// ```
+	
+	#[inline]
+	pub fn pop_front(&mut self) -> Option<T> {
+		self.iter.pop_front()
+	}
+	
+	/// *English*: place value to the start
+	///
+	/// *Russian*: добавляет значение в начало
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let mut iter = TreeIter::from_iter(1..5);
+	/// iter.push_back(&5);
+	///
+	/// assert_eq!(iter.collect::<Vec<i32>>(), vec![1, 2, 3, 4, 5]);
+	/// ```
+	
+	#[inline]
+	pub fn push_back(&mut self, val: &T) {
+		self.iter.push_back(val.clone());
+	}
+	
+	/// *English*: removes value from the start
+	///
+	/// *Russian*: удаляет значение из начала
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let mut iter = TreeIter::from_iter(1..5);
+	/// iter.pop_back();
+	///
+	/// assert_eq!(iter.collect::<Vec<i32>>(), vec![1, 2, 3]);
+	/// ```
+	
+	#[inline]
+	pub fn pop_back(&mut self) -> Option<T> {
+		self.iter.pop_back()
+	}
+	
+	/// *English*: *Removes an element at position index* within the iterator,
+	/// shifting all elements after it to the left.
+	/// Panics if index > len
+	///
+	/// *Russian*: *Удаляет значение по-индексу*,
+	/// передвигая все элементы после левее.
+	/// Паникует если index > len
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	///
+	/// let mut iter = TreeIter::new();
+	/// iter.insert(0, &1);
+	/// iter.insert(0, &2);
+	/// iter.insert(0, &3);
+	/// assert_eq!(iter.collect::<Vec<i32>>(), vec![3, 2, 1]);
+	/// ```
+	
+	#[inline]
+	pub fn remove(&mut self, index: usize) -> Option<T> {
+		self.iter.remove(index)
+	}
+	
+	/// *English*: Adds memory space to the iterator
+	///
+	/// *Russian*: Увеличивает ёмкость итератора
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	///
+	/// let mut iter = TreeIter::<i32>::with_capacity(5);
+	/// iter.reserve(10);
+	/// assert!(iter.capacity() >= 15);
+	/// ```
+	
+	#[inline]
+	pub fn reserve(&mut self, reserve: usize) {
+	   self.iter.reserve(reserve)
+	}
+	
+	/// *English*: Method **retain()** removes all elements that returns *false* with some function
+	///
+	/// *Russian*: Метод **retain** крадёт все элементы, неудоволетворяющие функции
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let mut iter = TreeIter ::from_iter(0..10);
+	/// iter.retain(|x| *x % 2 == 0);
+	///
+	/// assert_eq!(iter.collect::<Vec<i32>>(), vec![0, 2, 4, 6, 8]);
+	/// ```
+	
+	pub fn retain<F: FnMut(&T) -> bool>(&mut self, fun: F) {
+		let rem = self.drain_filter(fun);
+		self.clear(); self.extend(rem);
+	}
+	
+	/// *English*: removes unused memory space
+	///
+	/// *Russian*: убирает неиспользуемую область памяти под итератор
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	///
+	/// let mut iter = TreeIter::with_capacity(10);
+	///
+	/// iter.extend_from_slice(&[1, 2, 3]);
+	/// assert!(iter.capacity() >= 10);
+	///
+	/// iter.shrink_to_fit();
+	/// assert!(iter.capacity() >= 3);
+	/// ```
+	
+	#[inline]
+	pub fn shrink_to_fit(&mut self) {
+		self.iter.shrink_to_fit()
+	}
+	
+	/// *English*: Splits the iterator into two at the given index.
+	///
+	/// *Russian*: Делит итератор на два по индексу
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let mut iter1 = TreeIter::from_iter(0..50);
+	/// let iter2 = iter1.split_off(25);
+	///
+	/// assert_eq!(iter1.collect::<Vec<i32>>(), (0..25).collect::<Vec<i32>>());
+	/// assert_eq!(iter2.collect::<Vec<i32>>(), (25..50).collect::<Vec<i32>>());
+	/// ```
+	
+	pub fn split_off(&mut self, at: usize) -> Self {
+		let vec = self.iter.split_off(at);
+		let mut res = TreeIter::with_capacity(vec.len());
+		res.extend(vec);
+		res
+	}
+	
+	/// *English*: Removes element by index for O(1) by replacing it by last element,
+	/// but makes it unsorted.
+	/// Panics if index is out of bounds
+	///
+	/// *Russian*: Удаляет элемент по индексу за O(1) заменяя последний элемент первым,
+	/// но меняет порядок элементов.
+	/// Паникует, если индекс > длины
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let mut iter = TreeIter::from_iter(1..5);
+	///
+	/// assert_eq!(iter.swap_remove_back(0).unwrap(), 1);
+	/// assert_eq!(iter.clone().collect::<Vec<i32>>(), vec![4, 2, 3]);
+	///
+	/// assert_eq!(iter.swap_remove_back(0).unwrap(), 4);
+	/// assert_eq!(iter.clone().collect::<Vec<i32>>(), vec![3, 2]);
+	///
+	/// assert_eq!(iter.swap_remove_back(0).unwrap(), 3);
+	/// assert_eq!(iter.clone().collect::<Vec<i32>>(), vec![2]);
+	///
+	/// assert_eq!(iter.swap_remove_back(0).unwrap(), 2);
+	/// assert_eq!(iter.clone().collect::<Vec<i32>>(), vec![]);
+	/// ```
+	
+	#[inline]
+	pub fn swap_remove_back(&mut self, at: usize) -> Option<T> {
+		self.iter.swap_remove_back(at)
+	}
+	
+	/// *English*: Removes element by index for O(1) by replacing it by last element,
+	/// but makes it unsorted.
+	/// Panics if index is out of bounds
+	///
+	/// *Russian*: Удаляет элемент по индексу за O(1) заменяя последний элемент первым,
+	/// но меняет порядок элементов.
+	/// Паникует, если индекс > длины
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let mut iter = TreeIter::from_iter(1..5);
+	///
+	/// assert_eq!(iter.swap_remove_front(iter.len() - 1).unwrap(), 4);
+	/// assert_eq!(iter.clone().collect::<Vec<i32>>(), vec![2, 3, 1]);
+	///
+	/// assert_eq!(iter.swap_remove_front(iter.len() - 1).unwrap(), 1);
+	/// assert_eq!(iter.clone().collect::<Vec<i32>>(), vec![3, 2]);
+	///
+	/// assert_eq!(iter.swap_remove_front(iter.len() - 1).unwrap(), 2);
+	/// assert_eq!(iter.clone().collect::<Vec<i32>>(), vec![3]);
+	///
+	/// assert_eq!(iter.swap_remove_front(iter.len() - 1).unwrap(), 3);
+	/// assert_eq!(iter.clone().collect::<Vec<i32>>(), vec![]);
+	/// ```
+	
+	#[inline]
+	pub fn swap_remove_front(&mut self, at: usize) -> Option<T> {
+		self.iter.swap_remove_front(at)
+	}
+	
+	/// *English*: resizes iterator to *len* size
+	///
+	/// *Russian*: изменяет размер итератора до заданного
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let mut iter = TreeIter::from_iter(1..100);
+	/// iter.truncate(50);
+	/// assert_eq!(iter.collect::<Vec<i32>>(), (1..51).collect::<Vec<i32>>());
+	/// ```
+	
+	#[inline]
+	pub fn truncate(&mut self, len: usize) {
+		self.iter.truncate(len)
 	}
 }
 

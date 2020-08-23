@@ -159,7 +159,7 @@ impl<T> BinaryTree<T>
 	/// *English*: Method **is_empty()** answers the question: "is out tree empty?"
 	/// If it's true, returns *true*, else *false*.
 	///
-	/// *Rusiian*: Метод **is_empty()** отвечает на вопрос: "пусто ли наше дерево?"
+	/// *Russian*: Метод **is_empty()** отвечает на вопрос: "пусто ли наше дерево?"
 	/// Если пусто, то возвращает *true*, иначе *false*.
 	///
 	/// # Example
@@ -401,7 +401,7 @@ impl<T> BinaryTree<T>
 	/// assert_eq!(tree1.to_vec(), vec![1, 2, 3]);
 	/// ```
 	
-	pub fn append(&mut self, src: &BinaryTree<T>) {
+	pub fn append(&mut self, src: &Self) {
 		let collect = src.iter().iter;
 		for elem in collect.iter() {
 			self.insert(elem);
@@ -483,7 +483,7 @@ impl<T> BinaryTree<T>
 	/// assert_eq!(tree_1.difference(&tree_2).collect::<Vec<i32>>(), vec![1, 2]);
 	/// ```
 	
-	pub fn difference(&self, other: &BinaryTree<T>) -> TreeIter<T> {
+	pub fn difference(&self, other: &Self) -> TreeIter<T> {
 		let iter_1 = self.to_vec();
 		let iter_2 = other.to_vec();
 		
@@ -525,7 +525,7 @@ impl<T> BinaryTree<T>
 		let iter = self.iter();
 		
 		for elem in iter {
-			if fun(&elem) == true {
+			if fun(&elem) {
 				new_tree_iter.iter.push_back(elem.clone());
 			}
 		}
@@ -562,7 +562,7 @@ impl<T> BinaryTree<T>
 	/// assert_eq!(tree_1.intersection(&tree_2).collect::<Vec<i32>>(), vec![1, 2, 3, 4, 5, 6, 7, 8, 9]);
 	/// ```
 	
-	pub fn intersection(&self, other: &BinaryTree<T>) -> TreeIter<T> {
+	pub fn intersection(&self, other: &Self) -> TreeIter<T> {
 		let iter_1 = self.to_vec();
 		let iter_2 = other.to_vec();
 		
@@ -601,7 +601,7 @@ impl<T> BinaryTree<T>
 	/// assert_eq!(tree_3.is_disjoint(&tree_4), false);
 	/// ```
 	
-	pub fn is_disjoint(&self, other: &BinaryTree<T>) -> bool {
+	pub fn is_disjoint(&self, other: &Self) -> bool {
 		self.intersection(other).collect::<Vec<T>>().is_empty()
 	}
 	
@@ -699,22 +699,24 @@ impl<T> BinaryTree<T>
 	
 	/// *English*: Method **symmetric_difference()** returns *TreeIter<T>* with keys,
 	/// that are *only in 1-st or 2-nd tree*
+	/// Elements in iterator are **not in sorted order**.
 	///
 	/// *Russian*: Метод **symmetric_difference()** возвращает *"деревянный" итератор*
 	/// с ключами, которые есть *либо только в 1 дереве, либо только во 2*.
+	/// Метод возвращает **неотсортированный итератор**.
 	///
 	/// # Example
 	/// ```
 	/// use binartree::tree::BinaryTree;
 	/// use std::iter::FromIterator;
 	///
-	/// let tree1 = BinaryTree::from_iter((1..11));
-	/// let tree2 = BinaryTree::from_iter((5..16));
+	/// let tree1 = BinaryTree::from_iter((5..16));
+	/// let tree2 = BinaryTree::from_iter((1..11));
 	///
-	/// assert_eq!(tree1.symmetric_difference(&tree2).collect::<Vec<i32>>(), vec![1, 2, 3, 4, 11, 12, 13, 14, 15]);
+	/// assert_eq!(tree1.symmetric_difference(&tree2).collect::<Vec<i32>>(), vec![11, 12, 13, 14, 15, 1, 2, 3, 4]);
 	/// ```
 	
-	pub fn symmetric_difference(&self, other: &BinaryTree<T>) -> TreeIter<T> {
+	pub fn symmetric_difference(&self, other: &Self) -> TreeIter<T> {
 		let iter_1 = self.to_vec();
 		let iter_2 = other.to_vec();
 		
@@ -735,6 +737,33 @@ impl<T> BinaryTree<T>
 		let mut it = TreeIter::new();
 		it.extend(iter);
 		it
+	}
+	
+	/// *English*: Method **union()** creates iterator which contains
+	/// *elements from 1-st and 2-nd trees*.
+	/// Elements in iterator are **not in sorted order**.
+	///
+	/// *Russian*: Метод **гтшщт()** создаёт итереатор, содержащий
+	/// *элементы из 1 и 2 деревьев*.
+	/// Метод возвращает **неотсортированный итератор**.
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::tree::BinaryTree;
+	/// use std::iter::FromIterator;
+	///
+	/// let tree1 = BinaryTree::from_iter(1..15);
+	/// let tree2 = BinaryTree::from_iter(5..20);
+	///
+	/// assert_eq!(tree1.union(&tree2).collect::<BinaryTree<i32>>().to_vec(), (1..20).collect::<Vec<i32>>());
+	/// ```
+	
+	pub fn union(&self, other: &Self) -> TreeIter<T> {
+		let mut iter = TreeIter::new();
+		iter.extend(self.symmetric_difference(other));
+		iter.extend(self.intersection(other));
+		iter
 	}
 	
 	/// *English*: You should use method **multi_remove()**
@@ -951,7 +980,7 @@ impl<T> BitAnd for &BinaryTree<T>
 	/// assert_eq!((&tree1 & &tree2).to_vec(), (10..20).collect::<Vec<i32>>());
 	/// ```
 	
-	fn bitand(self, rhs: &BinaryTree<T>) -> BinaryTree<T> {
+	fn bitand(self, rhs: Self) -> BinaryTree<T> {
 		BinaryTree::from_iter(self.intersection(rhs))
 	}
 }
@@ -990,12 +1019,18 @@ impl<T> BitOr for &BinaryTree<T>
 	/// assert_eq!((&tree1 | &tree2).to_vec(), (1..20).collect::<Vec<i32>>());
 	/// ```
 	
-	fn bitor(self, rhs: &BinaryTree<T>) -> BinaryTree<T> {
-		let mut output = self.symmetric_difference(&rhs).collect::<BinaryTree<T>>();
-		output.extend(self.intersection(&rhs));
-		output
+	fn bitor(self, rhs: Self) -> BinaryTree<T> {
+		BinaryTree::from_iter(self.union(&rhs))
 	}
 }
+
+/// *English*: **BitOr** trait for tree. Creates tree,
+/// which contains *elements, which are only 1-st and only in 2-nd trees*.
+/// Return BinaryTree<T>
+///
+/// *Russian*: **BitOr** Трейт для дерева. Создаёт
+/// дерево *из элементов которые входят только в 1 и в 2 дерева*.
+/// Возвращает BinaryTree<T>
 
 impl<T> BitXor for &BinaryTree<T>
 	where T: Copy + Clone + Ord + Eq
@@ -1022,7 +1057,7 @@ impl<T> BitXor for &BinaryTree<T>
 	/// assert_eq!((&tree1 ^ &tree2).to_vec(), vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 15, 16, 17, 18, 19]);
 	/// ```
 	
-	fn bitxor(self, rhs: &BinaryTree<T>) -> BinaryTree<T> {
+	fn bitxor(self, rhs: Self) -> BinaryTree<T> {
 		BinaryTree::from_iter(self.symmetric_difference(&rhs))
 	}
 }
