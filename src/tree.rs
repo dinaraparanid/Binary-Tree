@@ -196,7 +196,7 @@ impl<T> BinaryTree<T>
 	/// use std::iter::FromIterator;
 	///
 	/// let tree = BinaryTree::from_iter((1..6));
-	/// assert_eq!(tree.to_vec(), vec![1, 2, 3, 4, 5]);
+	/// assert_eq!((&tree).to_vec(), vec![1, 2, 3, 4, 5]);
 	/// ```
 
 	#[inline]
@@ -1059,5 +1059,79 @@ impl<T> BitXor for &BinaryTree<T>
 	
 	fn bitxor(self, rhs: Self) -> BinaryTree<T> {
 		BinaryTree::from_iter(self.symmetric_difference(&rhs))
+	}
+}
+
+/// *English*: Converts slice to tree. Takes ownership
+///
+/// *Russian*: Конвертирует срез в дерево. Принимает владение
+///
+/// # Example
+///
+/// ```
+/// use binartree::tree::BinaryTree;
+///
+/// let mut vec = vec![10, 20, 30];
+/// let mut slice = &mut vec[..];
+/// let tree = BinaryTree::from(slice);
+/// assert_eq!(tree.to_vec(), vec![10, 20, 30]);
+/// ```
+
+impl<T> From<&mut [T]> for BinaryTree<T>
+	where T: Copy + Clone + Ord + Eq
+{
+	fn from(s: &mut [T]) -> Self {
+		let mut tree = BinaryTree::new();
+		tree.extend(s.to_vec());
+		tree
+	}
+}
+
+/// *English*: Converts vector to tree. Takes ownership
+///
+/// *Russian*: Конвертирует вектор в дерево. Принимает владение
+///
+/// # Example
+///
+/// ```
+/// use binartree::tree::BinaryTree;
+///
+/// let mut vec = vec![10, 20, 30];
+/// let tree = BinaryTree::from(vec);
+/// assert_eq!(tree.to_vec(), vec![10, 20, 30]);
+/// ```
+
+impl<T> From<Vec<T>> for BinaryTree<T>
+	where T: Copy + Clone + Ord + Eq
+{
+	fn from(s: Vec<T>) -> Self {
+		let mut tree = BinaryTree::new();
+		tree.extend(s);
+		tree
+	}
+}
+
+/// *English*: Converts deque to tree. Takes ownership
+///
+/// *Russian*: Конвертирует дек в дерево. Принимает владение
+///
+/// # Example
+///
+/// ```
+/// use binartree::tree::BinaryTree;
+/// use std::collections::VecDeque;
+///
+/// let mut deque = VecDeque::from(vec![10, 20, 30]);
+/// let tree = BinaryTree::from(deque);
+/// assert_eq!(tree.to_vec(), vec![10, 20, 30]);
+/// ```
+
+impl<T> From<VecDeque<T>> for BinaryTree<T>
+	where T: Copy + Clone + Ord + Eq
+{
+	fn from(s: VecDeque<T>) -> Self {
+		let mut tree = BinaryTree::new();
+		tree.extend(s);
+		tree
 	}
 }
