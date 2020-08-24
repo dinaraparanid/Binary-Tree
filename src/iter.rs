@@ -1,6 +1,6 @@
 use std::collections::VecDeque;
 use std::iter::FromIterator;
-use std::ops::{RangeBounds, Deref};
+use std::ops::RangeBounds;
 use std::collections::vec_deque::Drain;
 
 /// **Realisation of Iterator for Tree**
@@ -626,6 +626,45 @@ impl<T> TreeIter<T>
 	pub fn truncate(&mut self, len: usize) {
 		self.iter.truncate(len)
 	}
+	
+	/// *English*: Converts to vector by coping iterator. Doesn't takes ownership
+	///
+	/// *Russian*: Конвертирует в вектор копируя итератор. Владения нет
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	///
+	/// let iter = TreeIter::from_iter(1..5);
+	/// assert_eq!(iter.to_vec(), vec![1, 2, 3, 4]);
+	/// ```
+	
+	#[inline]
+	pub fn to_vec(&self) -> Vec<T> {
+		self.clone().collect::<Vec<T>>()
+	}
+	
+	/// *English*: Converts to deque by coping iterator. Doesn't takes ownership
+	///
+	/// *Russian*: Конвертирует в дек копируя итератор. Владения нет
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	/// use std::collections::VecDeque;
+	///
+	/// let iter = TreeIter::from_iter(1..5);
+	/// assert_eq!(iter.to_deque(), VecDeque::from(vec![1, 2, 3, 4]));
+	/// ```
+	
+	#[inline]
+	pub fn to_deque(&self) -> VecDeque<T> {
+		self.clone().collect::<VecDeque<T>>()
+	}
 }
 
 /// *English*: ~~Make our iterator iterator~~ **Iterator** trait
@@ -694,7 +733,60 @@ impl<T> Iterator for TreeIter<T>
 	/// ```
 	
 	fn next(&mut self) -> Option<T> {
-		return self.iter.pop_front();
+		return self.iter.pop_front()
+	}
+}
+
+impl<T> ExactSizeIterator for TreeIter<T>
+	where T: Copy + Clone + Ord + Eq
+{
+	fn len(&self) -> usize {
+		self.len()
+	}
+}
+
+/// *English*: **DoubleEndedIterator** makes out iterator reversed.
+/// It means that we can used reverse methods like rfind() and so on.
+///
+/// *Russian*: Трейт **DoubleEndedIterator** делает наш итератор обратным.
+/// Это значит, что мы можем использовать обратные методы как rfind()  другие
+///
+/// # Example
+///
+/// ```
+/// use binartree::iter::TreeIter;
+/// use std::iter::FromIterator;
+///
+/// let iter = TreeIter::from_iter(1..6);
+/// assert_eq!(iter.clone().rfind(|x| *x == 5), Some(5));
+/// assert_eq!(iter.clone().rev().collect::<Vec<i32>>(), vec![5, 4, 3, 2, 1]);
+/// assert_eq!(iter.clone().rposition(|x| x == 1), Some(0));
+/// ```
+
+impl<T> DoubleEndedIterator for TreeIter<T>
+	where T: Copy + Clone + Ord + Eq
+{
+	
+	/// *English*: Method **next_back()** returns end of iterator if it's exist
+	///
+	///*Russian*: Метод **next_back()** возвращает конец итератора, если тот существует
+	///
+	/// # Example
+	///
+	/// ```
+	/// use binartree::iter::TreeIter;
+	/// use std::iter::FromIterator;
+	/// 
+	/// let mut iter = TreeIter::from_iter(1..5);
+	/// assert_eq!(iter.next_back(), Some(4));
+	/// assert_eq!(iter.next_back(), Some(3));
+	/// assert_eq!(iter.next_back(), Some(2));
+	/// assert_eq!(iter.next_back(), Some(1));
+	/// assert_eq!(iter.next_back(), None);
+	/// ```
+	
+	fn next_back(&mut self) -> Option<T> {
+		return self.iter.pop_back()
 	}
 }
 
@@ -753,3 +845,5 @@ impl<T> FromIterator<T> for TreeIter<T>
 		it
 	}
 }
+
+
